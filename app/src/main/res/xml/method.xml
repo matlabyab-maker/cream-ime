@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity=".MainActivity">
+    <subtype android:label="@string/subtype_fa"
+        android:imeSubtypeLocale="fa_IR" android:imeSubtypeMode="keyboard"
+        android:imeSubtypeExtraValue="AsciiCapable" />
+    <subtype android:label="@string/subtype_en"
+        android:imeSubtypeLocale="en_US" android:imeSubtypeMode="keyboard"
+        android:imeSubtypeExtraValue="AsciiCapable" />
+</input-method>
