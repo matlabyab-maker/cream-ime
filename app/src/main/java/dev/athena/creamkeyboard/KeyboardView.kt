@@ -3,7 +3,9 @@ package dev.athena.creamkeyboard
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.StateListDrawable
 import android.os.Handler
 import android.os.Looper
 import android.view.Gravity
@@ -144,21 +146,33 @@ internal class KeyboardView(
         }
     }
 
-    private fun backgroundFor(kind: String) = GradientDrawable().apply {
-        cornerRadius = 5f * resources.displayMetrics.density
-        val fill = when (kind) {
+    private fun backgroundFor(kind: String): Drawable {
+        fun shape(fill: Int) = GradientDrawable().apply {
+            cornerRadius = 5f * resources.displayMetrics.density
+            setColor(fill)
+            setStroke((1 * resources.displayMetrics.density).toInt(), Color.rgb(211, 208, 198))
+        }
+
+        val normalFill = when (kind) {
             "blank" -> Color.TRANSPARENT
             "feature" -> Color.rgb(244, 242, 233)
             else -> Color.rgb(250, 249, 243)
         }
-        setColor(fill)
-        if (kind != "blank") setStroke((1 * resources.displayMetrics.density).toInt(), Color.rgb(211, 208, 198))
+        if (kind == "blank") return GradientDrawable().apply { setColor(Color.TRANSPARENT) }
+
+        // A press illuminates the whole key in a soft, sunny pale yellow.
+        return StateListDrawable().apply {
+            addState(intArrayOf(android.R.attr.state_pressed), shape(Color.rgb(255, 235, 160)))
+            addState(intArrayOf(android.R.attr.state_focused), shape(Color.rgb(255, 243, 196)))
+            addState(intArrayOf(), shape(normalFill))
+        }
     }
 
     private fun installCapsGestures(view: View) {
         view.setOnTouchListener { v, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
+                    v.isPressed = true
                     longFired = false
                     longPress?.let(handler::removeCallbacks)
                     longPress = Runnable {
@@ -170,6 +184,7 @@ internal class KeyboardView(
                     true
                 }
                 MotionEvent.ACTION_UP -> {
+                    v.isPressed = false
                     longPress?.let(handler::removeCallbacks)
                     if (longFired) return@setOnTouchListener true
                     if (firstCapsTap != null) {
@@ -186,6 +201,7 @@ internal class KeyboardView(
                     true
                 }
                 MotionEvent.ACTION_CANCEL -> {
+                    v.isPressed = false
                     longPress?.let(handler::removeCallbacks)
                     true
                 }
